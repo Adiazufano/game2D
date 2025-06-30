@@ -1,0 +1,10 @@
+Movimientos: 1
+Movimientos: 2
+Movimientos: 3
+Coleccionables restantes: 4
+Movimientos: 4
+Movimientos: 5
+Movimientos: 6
+Coleccionables restantes: 3
+Movimientos: 7
+Movimientos: 8
