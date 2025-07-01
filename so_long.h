@@ -6,7 +6,7 @@
 /*   By: aldiaz-u <aldiaz-u@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/27 09:38:01 by aldiaz-u          #+#    #+#             */
-/*   Updated: 2025/07/01 12:55:46 by aldiaz-u         ###   ########.fr       */
+/*   Updated: 2025/07/01 16:01:41 by aldiaz-u         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ typedef struct s_game
 	int			total_collecionables;
 	int			total_player;
 	int			total_exits;
+	int			initial_collectibles_drawn;
 	mlx_image_t	*player_img;
 	mlx_image_t	*wall_img;
 	mlx_image_t	*exit_img;

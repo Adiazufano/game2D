@@ -6,7 +6,7 @@
 /*   By: aldiaz-u <aldiaz-u@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/26 11:28:52 by aldiaz-u          #+#    #+#             */
-/*   Updated: 2025/07/01 12:59:06 by aldiaz-u         ###   ########.fr       */
+/*   Updated: 2025/07/01 16:42:30 by aldiaz-u         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -436,6 +436,13 @@ void	draw_exit(t_game *game)
 	}
 }
 
+void	draw_c(t_game *game, int x, int y)
+{
+	if (mlx_image_to_window(game -> mlx,
+			game -> collectionable_img, (x * 64), (y * 64)) < 0)
+		ft_error_and_exit(game);
+	game->initial_collectibles_drawn++;
+}
 void	draw_collectionables(t_game *game)
 {
 	int				x;
@@ -455,10 +462,8 @@ void	draw_collectionables(t_game *game)
 		x = 0;
 		while (game -> map[y][x])
 		{
-			if (game -> map[y][x] == 'C'
-				&& mlx_image_to_window(game -> mlx,
-					game -> collectionable_img, (x * 64), (y * 64)) < 0)
-				ft_error_and_exit(game);
+			if (game -> map[y][x] == 'C')
+				draw_c(game, x, y);
 			x++;
 		}
 		y++;
@@ -472,12 +477,12 @@ void	background(t_game *game)
 	texture = get_texture("./temp/background.png");
 	if (!texture)
 		ft_error_and_exit(game);
-	game -> background = get_image(game -> mlx, texture);
-	if (!game -> background)
+	game -> background = get_image(game->mlx, texture);
+	if (!game->background)
 		ft_error_and_exit(game);
-	resize_image(game -> background,
-		game, (game -> map_width * 64), (game -> map_height * 64));
-	if (mlx_image_to_window(game -> mlx, game -> background, 0, 0) < 0)
+	resize_image(game -> background, game,(game -> map_width * 64),  (game -> map_height * 64));
+	if ( mlx_image_to_window(game -> mlx,
+			game -> background, 0, 0) < 0)
 		ft_error_and_exit(game);
 }
 
@@ -511,6 +516,23 @@ int	total_collectionables(char **fill_lines)
 	return (total);
 }
 
+void	hide_collected_collectionable(t_game *game, int collected_x, int collected_y)
+{
+	int	i;
+
+	i = 0;
+	while (i < game -> initial_collectibles_drawn)
+	{
+
+		if (game -> collectionable_img -> instances[i].x / 64 == collected_x
+			&& game -> collectionable_img -> instances[i].y / 64 == collected_y)
+		{
+			game -> collectionable_img -> instances[i].enabled = false;
+		}
+		i++;
+	}
+}
+
 void	is_ollectionable(t_game *game, int new_x, int new_y)
 {
 	if (game -> map[new_y][new_x] == 'C')
@@ -518,6 +540,7 @@ void	is_ollectionable(t_game *game, int new_x, int new_y)
 		game -> map[new_y][new_x] = '0';
 		game->total_collecionables--;
 		printf("Coleccionables restantes: %d\n", game->total_collecionables);
+		hide_collected_collectionable(game, new_x, new_y);
 	}
 }
 
@@ -541,58 +564,61 @@ void	is_exit(t_game *game, int new_x, int new_y)
 
 void	move(t_game *game, int new_x, int new_y)
 {
-	if (new_x >= 0 && new_x < game -> map_width
-		&& new_y >= 0 && new_y < game -> map_height
-		&& game -> map[new_y][new_x] != '1')
-	{
-		is_ollectionable(game, new_x, new_y);
-		is_exit(game, new_x, new_y);
-		game->player_pos.x = new_x;
-		game->player_pos.y = new_y;
-		game->player_img->instances[0].x = game->player_pos.x * 64;
-		game->player_img->instances[0].y = game->player_pos.y * 64;
-		game->moves++;
-		printf("Movimientos: %d\n", game->moves);
-	}
+	is_ollectionable(game, new_x, new_y);
+	is_exit(game, new_x, new_y);
+	if (game -> total_collecionables == 0 && game -> map[new_y][new_x] == 'E')
+		return ;
+	game->player_pos.x = new_x;
+	game->player_pos.y = new_y;
+	game->player_img->instances[0].x = game->player_pos.x * 64;
+	game->player_img->instances[0].y = game->player_pos.y * 64;
+	game->moves++;
+	printf("Movimientos: %d\n", game->moves);
 }
 
-void	keys(int *moved, mlx_key_data_t keydata, t_game *game)
+int	keys(mlx_key_data_t keydata, t_game *game, t_point *target_pos_out)
 {
+	target_pos_out->x = game->player_pos.x;
+	target_pos_out->y = game->player_pos.y;
+
+	if (keydata.action != MLX_PRESS)
+		return (0);
 	if (keydata.key == MLX_KEY_W || keydata.key == MLX_KEY_UP)
-	{
-		game -> player_pos.y--;
-		*moved = 1;
-	}
+		target_pos_out -> y--;
 	else if (keydata.key == MLX_KEY_S || keydata.key == MLX_KEY_DOWN)
-	{
-		*moved = 1;
-		game -> player_pos.y++;
-	}
+		target_pos_out -> y++;
 	else if (keydata.key == MLX_KEY_D || keydata.key == MLX_KEY_RIGHT)
-	{
-		*moved = 1;
-		game -> player_pos.x++;
-	}
+		target_pos_out -> x++;
 	else if (keydata.key == MLX_KEY_A || keydata.key == MLX_KEY_LEFT)
-	{
-		*moved = 1;
-		game -> player_pos.x--;
-	}
+		target_pos_out -> x--;
 	else if (keydata.key == MLX_KEY_ESCAPE)
+	{
 		mlx_close_window(game -> mlx);
+		return (0);
+	}
+	return (1);
 }
 
 void	key_hook(mlx_key_data_t keydata, void *param)
 {
 	t_game	*game;
-	int		moved;
+	t_point	temp_player_pos;
+	int		is_move;
 
-	moved = 0;
 	game = (t_game *) param;
-	if (keydata.action == MLX_PRESS)
-		keys(&moved, keydata, game);
-	if (moved)
-		move(game, game -> player_pos.x, game -> player_pos.y);
+	is_move = keys(keydata, game, &temp_player_pos);
+	if (is_move)
+	{
+		if (temp_player_pos.x >= 0 && temp_player_pos.x < game -> map_width
+			&& temp_player_pos.y >= 0 && temp_player_pos.y < game -> map_height
+			&& game -> map[temp_player_pos.y][temp_player_pos.x] != '1')
+		{
+			if (temp_player_pos.x != game->player_pos.x || temp_player_pos.y != game->player_pos.y)
+			{
+				move(game, temp_player_pos.x, temp_player_pos.y);
+			}
+		}
+	}
 }
 
 void	init_game_s(t_game *game)
@@ -612,6 +638,7 @@ void	init_game_s(t_game *game)
 	game->total_player = 0;
 	game->player_pos.x = -1;
 	game->player_pos.y = -1;
+	game -> initial_collectibles_drawn = 0;
 }
 
 void	load_game_data(t_game *game, char *map_path)
