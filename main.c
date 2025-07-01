@@ -6,7 +6,7 @@
 /*   By: aldiaz-u <aldiaz-u@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/26 11:28:52 by aldiaz-u          #+#    #+#             */
-/*   Updated: 2025/06/30 18:34:17 by aldiaz-u         ###   ########.fr       */
+/*   Updated: 2025/07/01 12:59:06 by aldiaz-u         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@
 
 void	free_memory(char **fill_lines, int **visited_map, int saltos)
 {
-	int i;
-	
+	int	i;
+
 	if (fill_lines)
 	{
 		i = 0;
@@ -31,13 +31,13 @@ void	free_memory(char **fill_lines, int **visited_map, int saltos)
 	if (visited_map)
 	{
 		i = 0;
-		while(i < saltos)
+		while (i < saltos)
 			free(visited_map[i++]);
 		free(visited_map);
 	}
 }
 
-void    cleanup_mlx_resources(t_game *game)
+void	cleanup_mlx_resources(t_game *game)
 {
 	if (!game || !game->mlx)
 		return ;
@@ -96,16 +96,18 @@ int	height(char *map, t_game *game)
 	saltos = 0;
 	map_fd = open(map, O_RDONLY);
 	map_errors(map_fd, game);
-	while ((line = get_next_line(map_fd)))
+	line = get_next_line(map_fd);
+	while (line != NULL)
 	{
 		saltos++;
 		free(line);
+		line = get_next_line(map_fd);
 	}
 	close(map_fd);
 	return (saltos);
 }
 
-char **fill(char *map, int saltos, t_game *game)
+char	**fill(char *map, int saltos, t_game *game)
 {
 	int		map_fd;
 	char	*line;
@@ -117,8 +119,9 @@ char **fill(char *map, int saltos, t_game *game)
 	fill_lines = malloc(sizeof(char *) * (saltos + 1));
 	map_fd = open(map, O_RDONLY);
 	map_errors(map_fd, game);
-	while ((line = get_next_line(map_fd)))
+	while (i < saltos)
 	{
+		line = get_next_line(map_fd);
 		len = ft_strlen(line);
 		if (len > 0 && line[len - 1] == '\n')
 			line[len - 1] = '\0';
@@ -131,7 +134,17 @@ char **fill(char *map, int saltos, t_game *game)
 	return (fill_lines);
 }
 
-void	quantity(t_game *game, int *index, int *k, int *c, int *p, int *e)
+void	count_items(t_game *game, int *index, int *k)
+{
+	if (game -> map[*index][*k] == 'C')
+		game -> total_collecionables++;
+	if (game -> map[*index][*k] == 'P')
+		game -> total_player++;
+	if (game -> map[*index][*k] == 'E')
+		game -> total_exits++;
+}
+
+void	quantity(t_game *game, int *index, int *k)
 {
 	int	line_len;
 
@@ -143,18 +156,18 @@ void	quantity(t_game *game, int *index, int *k, int *c, int *p, int *e)
 			if (game -> map[*index][*k] != '1')
 				ft_error_and_exit(game);
 		}
-		if (game -> map[*index][*k] == 'C')
-			(*c)++;
-		if (game -> map[*index][*k] == 'P')
-			(*p)++;
-		if (game -> map[*index][*k] == 'E')
-			(*e)++;
+		count_items(game, index, k);
 		if (*index > 0 && *index < game -> map_height - 1)
 		{
-			if (game -> map[*index][0] != '1' || game -> map[*index][line_len - 1] != '1')
+			if (game -> map[*index][0] != '1'
+				|| game -> map[*index][line_len - 1] != '1')
 				ft_error_and_exit(game);
 		}
-		if (game -> map[*index][*k] != '1' && game -> map[*index][*k] != '0' && game -> map[*index][*k] != 'C' && game -> map[*index][*k] != 'P' && game -> map[*index][*k] != 'E')
+		if (game -> map[*index][*k] != '1'
+			&& game -> map[*index][*k] != '0'
+			&& game -> map[*index][*k] != 'C'
+			&& game -> map[*index][*k] != 'P'
+			&& game -> map[*index][*k] != 'E')
 			ft_error_and_exit(game);
 		(*k)++;
 	}
@@ -163,25 +176,21 @@ void	quantity(t_game *game, int *index, int *k, int *c, int *p, int *e)
 void	is_valid_map(t_game *game)
 {
 	int	k;
-	int	c;
-	int	p;
-	int	e;
 	int	index;
 
 	k = 0;
-	c = 0;
-	p = 0;
-	e = 0;
 	index = 0;
 	while (game -> map[index])
 	{
 		k = 0;
 		if (ft_strlen(game -> map[index]) < 3 || game -> map_height < 3)
 			ft_error_and_exit(game);
-		quantity(game, &index, &k, &c, &p, &e);
+		quantity(game, &index, &k);
 		index++;
 	}
-	if (c <= 0 || e != 1 || p != 1)
+	if (game -> total_collecionables <= 0
+		|| game -> total_exits != 1
+		|| game -> total_player != 1)
 		ft_error_and_exit(game);
 }
 
@@ -202,18 +211,18 @@ void	ft_map_form(t_game *game)
 	}
 }
 
-int	get_player_pos(char **fill_lines, t_point *pos)
+int	get_player_pos(char **map, t_point *pos)
 {
 	int	x;
 	int	y;
 
 	y = 0;
-	while (fill_lines[y])
+	while (map[y])
 	{
 		x = 0;
-		while (fill_lines[y][x])
+		while (map[y][x])
 		{
-			if (fill_lines[y][x] == 'P')
+			if (map[y][x] == 'P')
 			{
 				pos -> x = x;
 				pos -> y = y;
@@ -226,22 +235,20 @@ int	get_player_pos(char **fill_lines, t_point *pos)
 	return (0);
 }
 
-int **visited_map(char **fill_lines, int saltos, t_game *game)
+int	**visited_map(t_game *game)
 {
-	int len;
-	int y;
-	int x;
-	int **visited;
+	int	y;
+	int	x;
+	int	**visited;
 
-	len = ft_strlen(fill_lines[0]);
-	visited = (int **)malloc(sizeof(int *) * saltos);
-	if (!visited) // CAMBIO: Chequear malloc
+	visited = (int **)malloc(sizeof(int *) * game -> map_height);
+	if (!visited)
 		ft_error_and_exit(game);
 	y = 0;
-	while (y < saltos)
+	while (y < game -> map_height)
 	{
-		visited[y] = (int *)malloc(sizeof(int) * len);
-		if (!visited[y]) // CAMBIO: Chequear malloc y limpiar si falla
+		visited[y] = (int *)malloc(sizeof(int) * game -> map_width);
+		if (!visited[y])
 		{
 			while (y > 0)
 				free(visited[--y]);
@@ -249,25 +256,25 @@ int **visited_map(char **fill_lines, int saltos, t_game *game)
 			ft_error_and_exit(game);
 		}
 		x = 0;
-		while (x < len)
-		{
-			visited[y][x] = 0;
-			x++;
-		}
+		while (x < game -> map_height)
+			visited[y][x++] = 0;
 		y++;
 	}
 	return (visited);
 }
 
-void	flood_fil(t_point *pos, int saltos, char **fill_lines, int **visited_map)
+void	flood_fil(t_point *pos, int saltos,
+			char **fill_lines, int **visited_map)
 {
-	int	len;
+	int		len;
 	t_point	next_pos;
-	
+
 	len = ft_strlen(fill_lines[0]);
-	if (pos -> x < 0 || pos -> x >= len || pos -> y < 0 || pos -> y >= saltos || fill_lines[pos -> y][ pos -> x] == '1' || visited_map[pos -> y][pos -> x] == 1)
+	if (pos -> x < 0 || pos -> x >= len
+		|| pos -> y < 0 || pos -> y >= saltos
+		|| fill_lines[pos -> y][pos -> x] == '1'
+		|| visited_map[pos -> y][pos -> x] == 1)
 		return ;
-	
 	visited_map[pos -> y][pos -> x] = 1;
 	next_pos.x = pos -> x + 1;
 	next_pos.y = pos -> y;
@@ -278,7 +285,7 @@ void	flood_fil(t_point *pos, int saltos, char **fill_lines, int **visited_map)
 	next_pos.x = pos -> x;
 	next_pos.y = pos -> y + 1;
 	flood_fil(&next_pos, saltos, fill_lines, visited_map);
-	next_pos.x = pos  -> x;
+	next_pos.x = pos -> x;
 	next_pos.y = pos -> y - 1;
 	flood_fil(&next_pos, saltos, fill_lines, visited_map);
 }
@@ -296,9 +303,15 @@ void	check_acces(t_game *game)
 		x = 0;
 		while (x < len)
 		{
-			if (game -> map[y][x] == 'P' && game -> visited_map[y + 1][x] == 0 && game -> visited_map[y - 1][x] && game -> visited_map[y][x + 1] && game -> visited_map[y][x - 1])
+			if (game -> map[y][x] == 'P'
+				&& game -> visited_map[y + 1][x] == 0
+				&& game -> visited_map[y - 1][x]
+				&& game -> visited_map[y][x + 1]
+				&& game -> visited_map[y][x - 1])
 				ft_error_and_exit(game);
-			if ((game -> map[y][x] == 'C' || game -> map[y][x] == 'E') && game -> visited_map[y][x] == 0)
+			if ((game -> map[y][x] == 'C'
+				|| game -> map[y][x] == 'E')
+				&& game -> visited_map[y][x] == 0)
 				ft_error_and_exit(game);
 			x++;
 		}
@@ -306,18 +319,20 @@ void	check_acces(t_game *game)
 	}
 }
 
-mlx_texture_t *get_texture(char *path)
+mlx_texture_t	*get_texture(char *path)
 {
-	mlx_texture_t *texture;
+	mlx_texture_t	*texture;
+
 	texture = mlx_load_png(path);
 	if (!texture)
 		return (NULL);
 	return (texture);
 }
 
-mlx_image_t *get_image(mlx_t *mlx, mlx_texture_t *texture)
+mlx_image_t	*get_image(mlx_t *mlx, mlx_texture_t *texture)
 {
-	mlx_image_t *img;
+	mlx_image_t	*img;
+
 	if (!texture)
 		return (NULL);
 	img = mlx_texture_to_image(mlx, texture);
@@ -330,45 +345,45 @@ mlx_image_t *get_image(mlx_t *mlx, mlx_texture_t *texture)
 	return (img);
 }
 
-void	resize_image(mlx_image_t *img, t_game *game)
+void	resize_image(mlx_image_t *img, t_game *game, int width, int height)
 {
-	if (mlx_resize_image(img, 64, 64) == false)
+	if (mlx_resize_image(img, width, height) == false)
 		ft_error_and_exit(game);
 }
 
-void    draw_walls(t_game *game)
+void	draw_walls(t_game *game)
 {
-	int x;
-	int y;
-	mlx_texture_t *texture;
+	int				x;
+	int				y;
+	mlx_texture_t	*texture;
 
 	texture = get_texture("./temp/pared.png");
 	if (!texture)
 		ft_error_and_exit(game);
-	game -> wall_img  = get_image(game->mlx, texture);
+	game -> wall_img = get_image(game->mlx, texture);
 	if (!game->wall_img)
 		ft_error_and_exit(game);
-	resize_image(game -> wall_img, game);
+	resize_image(game -> wall_img, game, 64, 64);
 	y = 0;
 	while (game -> map[y])
 	{
 		x = 0;
 		while (game -> map[y][x])
 		{
-			if (game -> map[y][x] == '1' && mlx_image_to_window(game -> mlx, game -> wall_img, (x * 64), (y * 64))  < 0)
-			{
+			if (game -> map[y][x] == '1'
+				&& mlx_image_to_window(game -> mlx,
+					game -> wall_img, (x * 64), (y * 64)) < 0)
 				ft_error_and_exit(game);
-			}
 			x++;
 		}
 		y++;
 	}
 }
 
-mlx_image_t *draw_player(mlx_t *mlx, t_point player_pos, t_game *game)
+mlx_image_t	*draw_player(mlx_t *mlx, t_point player_pos, t_game *game)
 {
-	mlx_texture_t   *texture;
-	mlx_image_t     *img;
+	mlx_texture_t	*texture;
+	mlx_image_t		*img;
 
 	texture = get_texture("./temp/player.png");
 	if (!texture)
@@ -382,8 +397,9 @@ mlx_image_t *draw_player(mlx_t *mlx, t_point player_pos, t_game *game)
 		ft_error_and_exit(game);
 		return (NULL);
 	}
-	resize_image(img, game);
-	if (mlx_image_to_window(mlx, img, (player_pos.x * 64), (player_pos.y * 64)) < 0)
+	resize_image(img, game, 64, 64);
+	if (mlx_image_to_window(mlx, img,
+			(player_pos.x * 64), (player_pos.y * 64)) < 0)
 	{
 		ft_error_and_exit(game);
 		return (NULL);
@@ -391,40 +407,40 @@ mlx_image_t *draw_player(mlx_t *mlx, t_point player_pos, t_game *game)
 	return (img);
 }
 
-void    draw_exit(t_game *game)
+void	draw_exit(t_game *game)
 {
-	int x;
-	int y;
-	mlx_texture_t *texture;
+	int				x;
+	int				y;
+	mlx_texture_t	*texture;
 
 	texture = get_texture("./temp/exit.png");
 	if (!texture)
 		ft_error_and_exit(game);
-	game -> exit_img  = get_image(game->mlx, texture);
+	game -> exit_img = get_image(game->mlx, texture);
 	if (!game->exit_img)
 		ft_error_and_exit(game);
-	resize_image(game -> exit_img, game);
+	resize_image(game -> exit_img, game, 64, 64);
 	y = 0;
 	while (game -> map[y])
 	{
 		x = 0;
 		while (game -> map[y][x])
 		{
-			if (game -> map[y][x] == 'E' && mlx_image_to_window(game -> mlx, game -> exit_img, (x * 64), (y * 64))  < 0)
-			{
+			if (game -> map[y][x] == 'E'
+				&& mlx_image_to_window(game -> mlx,
+					game -> exit_img, (x * 64), (y * 64)) < 0)
 				ft_error_and_exit(game);
-			}
 			x++;
 		}
 		y++;
 	}
 }
 
-void    draw_collectionables(t_game *game)
+void	draw_collectionables(t_game *game)
 {
-	int x;
-	int y;
-	mlx_texture_t *texture;
+	int				x;
+	int				y;
+	mlx_texture_t	*texture;
 
 	texture = get_texture("./temp/queso.png");
 	if (!texture)
@@ -432,26 +448,42 @@ void    draw_collectionables(t_game *game)
 	game -> collectionable_img = get_image(game->mlx, texture);
 	if (!game->collectionable_img)
 		ft_error_and_exit(game);
-	resize_image(game -> collectionable_img, game);
+	resize_image(game -> collectionable_img, game, 64, 64);
 	y = 0;
 	while (game -> map[y])
 	{
 		x = 0;
 		while (game -> map[y][x])
 		{
-			if (game -> map[y][x] == 'C' && mlx_image_to_window(game -> mlx, game -> collectionable_img, (x * 64), (y * 64))  < 0)
-			{
+			if (game -> map[y][x] == 'C'
+				&& mlx_image_to_window(game -> mlx,
+					game -> collectionable_img, (x * 64), (y * 64)) < 0)
 				ft_error_and_exit(game);
-			}
 			x++;
 		}
 		y++;
 	}
 }
 
+void	background(t_game *game)
+{
+	mlx_texture_t	*texture;
+
+	texture = get_texture("./temp/background.png");
+	if (!texture)
+		ft_error_and_exit(game);
+	game -> background = get_image(game -> mlx, texture);
+	if (!game -> background)
+		ft_error_and_exit(game);
+	resize_image(game -> background,
+		game, (game -> map_width * 64), (game -> map_height * 64));
+	if (mlx_image_to_window(game -> mlx, game -> background, 0, 0) < 0)
+		ft_error_and_exit(game);
+}
 
 void	draw_start_map(t_game *game)
 {
+	background(game);
 	draw_walls(game);
 	draw_exit(game);
 	draw_collectionables(game);
@@ -479,115 +511,138 @@ int	total_collectionables(char **fill_lines)
 	return (total);
 }
 
-void	key_hook(mlx_key_data_t keydata, void *param)
+void	is_ollectionable(t_game *game, int new_x, int new_y)
 {
-	t_game *game;
-	int		new_x;
-	int		new_y;
-	int		moved;
-
-	moved = 0;
-	game = (t_game *) param;
-	new_x = game -> player_pos.x;
-	new_y = game -> player_pos.y;
-	if (keydata.action == MLX_PRESS)
+	if (game -> map[new_y][new_x] == 'C')
 	{
-		if (keydata.key == MLX_KEY_W || keydata.key == MLX_KEY_UP)
-		{
-			new_y--;
-			moved = 1;
-		}
-		else if (keydata.key == MLX_KEY_S || keydata.key == MLX_KEY_DOWN)
-		{
-			moved = 1;
-			new_y++;
-		}
-		else if (keydata.key == MLX_KEY_D || keydata.key == MLX_KEY_RIGHT)
-		{
-			moved = 1;
-			new_x++;
-		}
-		else if (keydata.key == MLX_KEY_A || keydata.key == MLX_KEY_LEFT)
-		{
-			moved = 1;
-			new_x--;
-		}
-		else if (keydata.key == MLX_KEY_ESCAPE)
-			mlx_close_window(game -> mlx);
+		game -> map[new_y][new_x] = '0';
+		game->total_collecionables--;
+		printf("Coleccionables restantes: %d\n", game->total_collecionables);
 	}
-	if (moved)
+}
+
+void	is_exit(t_game *game, int new_x, int new_y)
+{
+	if (game->map[new_y][new_x] == 'E')
 	{
-		if (new_x >= 0 && new_x < game -> map_width
-			&& new_y >= 0 && new_y < game -> map_height
-			&& game -> map[new_y][new_x] != '1')
+		if (game->total_collecionables == 0)
 		{
-			if (game -> map[new_y][new_x]  == 'C')
-			{
-				game -> map[new_y][new_x] = '0';
-				game->total_collecionables--;
-				printf("Coleccionables restantes: %d\n", game->total_collecionables);
-			} 
-			if (game->map[new_y][new_x] == 'E')
-			{
-				if (game->total_collecionables == 0)
-				{
-					printf("Felicidades has escpado!!\n");
-				mlx_close_window(game->mlx);
-					return ;
-				}
-				else
-				{
-					printf("!Aun quedan coleccionables por recoger!\n");
-					return ;
-				}
-			}
-			else
-			{
-				game->player_pos.x = new_x;
-				game->player_pos.y = new_y;
-				game->player_img->instances[0].x = game->player_pos.x * 64;
-				game->player_img->instances[0].y = game->player_pos.y * 64;
-				game->moves++;
-			}
-			printf("Movimientos: %d\n", game->moves);
+			printf("Felicidades has escpado!!\n");
+			mlx_close_window(game->mlx);
+			return ;
+		}
+		else
+		{
+			printf("!Aun quedan coleccionables por recoger!\n");
+			return ;
 		}
 	}
 }
 
-int main(int argc, char *argv[])
+void	move(t_game *game, int new_x, int new_y)
 {
-	t_game  game;
+	if (new_x >= 0 && new_x < game -> map_width
+		&& new_y >= 0 && new_y < game -> map_height
+		&& game -> map[new_y][new_x] != '1')
+	{
+		is_ollectionable(game, new_x, new_y);
+		is_exit(game, new_x, new_y);
+		game->player_pos.x = new_x;
+		game->player_pos.y = new_y;
+		game->player_img->instances[0].x = game->player_pos.x * 64;
+		game->player_img->instances[0].y = game->player_pos.y * 64;
+		game->moves++;
+		printf("Movimientos: %d\n", game->moves);
+	}
+}
 
-	game.mlx = NULL;
-	game.map = NULL;
-	game.visited_map = NULL;
-	game.wall_img = NULL;
-	game.exit_img = NULL;
-	game.collectionable_img = NULL;
-	game.player_img = NULL;
-	game.moves = 0;
-	game.map_height = 0;
-	game.map_width = 0;
-	game.total_collecionables = 0;
-	game.player_pos.x = -1;
-	game.player_pos.y = -1;
-	if (argc != 2 || ft_strncmp(&argv[1][ft_strlen(argv[1]) - 4], ".ber", 4) != 0)
+void	keys(int *moved, mlx_key_data_t keydata, t_game *game)
+{
+	if (keydata.key == MLX_KEY_W || keydata.key == MLX_KEY_UP)
+	{
+		game -> player_pos.y--;
+		*moved = 1;
+	}
+	else if (keydata.key == MLX_KEY_S || keydata.key == MLX_KEY_DOWN)
+	{
+		*moved = 1;
+		game -> player_pos.y++;
+	}
+	else if (keydata.key == MLX_KEY_D || keydata.key == MLX_KEY_RIGHT)
+	{
+		*moved = 1;
+		game -> player_pos.x++;
+	}
+	else if (keydata.key == MLX_KEY_A || keydata.key == MLX_KEY_LEFT)
+	{
+		*moved = 1;
+		game -> player_pos.x--;
+	}
+	else if (keydata.key == MLX_KEY_ESCAPE)
+		mlx_close_window(game -> mlx);
+}
+
+void	key_hook(mlx_key_data_t keydata, void *param)
+{
+	t_game	*game;
+	int		moved;
+
+	moved = 0;
+	game = (t_game *) param;
+	if (keydata.action == MLX_PRESS)
+		keys(&moved, keydata, game);
+	if (moved)
+		move(game, game -> player_pos.x, game -> player_pos.y);
+}
+
+void	init_game_s(t_game *game)
+{
+	game->mlx = NULL;
+	game->map = NULL;
+	game->visited_map = NULL;
+	game->wall_img = NULL;
+	game->exit_img = NULL;
+	game->collectionable_img = NULL;
+	game->player_img = NULL;
+	game->moves = 0;
+	game->map_height = 0;
+	game->map_width = 0;
+	game->total_collecionables = 0;
+	game->total_exits = 0;
+	game->total_player = 0;
+	game->player_pos.x = -1;
+	game->player_pos.y = -1;
+}
+
+void	load_game_data(t_game *game, char *map_path)
+{
+	game -> map_height = height(map_path, game);
+	game -> map = fill(map_path, game -> map_height, game);
+	game -> map_width = ft_strlen(game -> map[0]);
+	ft_map_form(game);
+	is_valid_map(game);
+	get_player_pos(game -> map, &game -> player_pos);
+	game -> visited_map = visited_map(game);
+	flood_fil(&game->player_pos,
+		game->map_height, game -> map, game -> visited_map);
+	check_acces(game);
+}
+
+int	main(int argc, char *argv[])
+{
+	t_game	game;
+
+	init_game_s(&game);
+	if (argc != 2
+		|| ft_strncmp(&argv[1][ft_strlen(argv[1]) - 4], ".ber", 4) != 0)
 	{
 		ft_error_and_exit(&game);
 	}
-	game.map_height = height(argv[1], &game);
-	game.map = fill(argv[1], game.map_height, &game);
-	game.map_width = ft_strlen(game.map[0]);
-	ft_map_form(&game);
-	is_valid_map(&game);
-	get_player_pos(game.map, &game.player_pos);
-	game.visited_map = visited_map(game.map, game.map_height, &game);
-	flood_fil(&game.player_pos, game.map_height, game.map, game.visited_map);
-	check_acces(&game);
-	game.mlx = mlx_init(game.map_width * 64, game.map_height * 64, "so_long", false);
+	load_game_data(&game, argv[1]);
+	game.mlx = mlx_init(game.map_width * 64,
+			game.map_height * 64, "so_long", false);
 	if (!game.mlx)
 		ft_error_and_exit(&game);
-	game.total_collecionables = total_collectionables(game.map);
 	draw_start_map(&game);
 	game.player_img = draw_player(game.mlx, game.player_pos, &game);
 	mlx_key_hook(game.mlx, &key_hook, &game);
@@ -596,4 +651,3 @@ int main(int argc, char *argv[])
 	cleanup_mlx_resources(&game);
 	return (0);
 }
-
