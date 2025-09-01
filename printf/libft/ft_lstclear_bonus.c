@@ -1,24 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   ft_lstclear_bonus.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aldiaz-u <aldiaz-u@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/30 17:38:05 by aldiaz-u          #+#    #+#             */
-/*   Updated: 2025/07/02 09:39:06 by aldiaz-u         ###   ########.fr       */
+/*   Created: 2025/04/16 16:48:11 by aldiaz-u          #+#    #+#             */
+/*   Updated: 2025/04/21 11:27:07 by aldiaz-u         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 4
-# endif
-# include <fcntl.h>
-# include <stdlib.h>
-# include <unistd.h>
-# include "printf/ft_printf.h"
+#include "libft.h"
 
-char	*get_next_line(int fd);
-#endif
+void	ft_lstclear(t_list **lst, void (*del)(void *))
+{
+	t_list	*temp;
+
+	temp = *lst;
+	while (*lst)
+	{
+		temp = (*lst)-> next;
+		ft_lstdelone(*lst, del);
+		*lst = temp;
+	}
+	*lst = NULL;
+}

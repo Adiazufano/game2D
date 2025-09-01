@@ -1,24 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   ft_strjoin.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aldiaz-u <aldiaz-u@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/30 17:38:05 by aldiaz-u          #+#    #+#             */
-/*   Updated: 2025/07/02 09:39:06 by aldiaz-u         ###   ########.fr       */
+/*   Created: 2025/04/10 08:51:00 by aldiaz-u          #+#    #+#             */
+/*   Updated: 2025/04/13 13:37:04 by aldiaz-u         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 4
-# endif
-# include <fcntl.h>
-# include <stdlib.h>
-# include <unistd.h>
-# include "printf/ft_printf.h"
+#include "libft.h"
 
-char	*get_next_line(int fd);
-#endif
+char	*ft_strjoin(char const *s1, char const *s2)
+{
+	char	*join;
+	char	*temp;
+
+	join = (char *)malloc((ft_strlen(s1) + ft_strlen(s2) + 1) * sizeof(char));
+	temp = join;
+	if (!join)
+		return (NULL);
+	while (*s1)
+		*temp++ = *s1++;
+	while (*s2)
+		*temp++ = *s2++;
+	*temp = '\0';
+	return (join);
+}

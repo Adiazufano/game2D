@@ -1,24 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   ft_isdigit.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aldiaz-u <aldiaz-u@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/30 17:38:05 by aldiaz-u          #+#    #+#             */
-/*   Updated: 2025/07/02 09:39:06 by aldiaz-u         ###   ########.fr       */
+/*   Created: 2025/04/08 10:26:37 by aldiaz-u          #+#    #+#             */
+/*   Updated: 2025/04/08 10:39:07 by aldiaz-u         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 4
-# endif
-# include <fcntl.h>
-# include <stdlib.h>
-# include <unistd.h>
-# include "printf/ft_printf.h"
-
-char	*get_next_line(int fd);
-#endif
+int	ft_isdigit(int c)
+{
+	if (c >= 48 && c <= 57)
+		return (2048);
+	else
+		return (0);
+}

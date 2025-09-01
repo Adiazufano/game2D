@@ -1,24 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   ft_strmapi.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aldiaz-u <aldiaz-u@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/30 17:38:05 by aldiaz-u          #+#    #+#             */
-/*   Updated: 2025/07/02 09:39:06 by aldiaz-u         ###   ########.fr       */
+/*   Created: 2025/04/12 12:50:01 by aldiaz-u          #+#    #+#             */
+/*   Updated: 2025/04/15 16:39:09 by aldiaz-u         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 4
-# endif
-# include <fcntl.h>
-# include <stdlib.h>
-# include <unistd.h>
-# include "printf/ft_printf.h"
+#include "libft.h"
 
-char	*get_next_line(int fd);
-#endif
+char	*ft_strmapi(char const *s, char (*f)(unsigned int, char))
+{
+	char	*array;
+	size_t	i;
+
+	i = 0;
+	array = malloc((ft_strlen(s) + 1) * sizeof(char));
+	if (!array)
+		return (NULL);
+	while (s[i])
+	{
+		array[i] = f(i, s[i]);
+		i++;
+	}
+	array[i] = '\0';
+	return (array);
+}

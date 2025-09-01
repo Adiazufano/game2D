@@ -1,24 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   ft_print_int.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aldiaz-u <aldiaz-u@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/30 17:38:05 by aldiaz-u          #+#    #+#             */
-/*   Updated: 2025/07/02 09:39:06 by aldiaz-u         ###   ########.fr       */
+/*   Created: 2025/04/24 19:18:49 by aldiaz-u          #+#    #+#             */
+/*   Updated: 2025/04/25 20:13:07 by aldiaz-u         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 4
-# endif
-# include <fcntl.h>
-# include <stdlib.h>
-# include <unistd.h>
-# include "printf/ft_printf.h"
+#include "ft_printf.h"
 
-char	*get_next_line(int fd);
-#endif
+void	ft_print_int(va_list args, int *count)
+{
+	int		num;
+	char	*s;
+
+	num = va_arg(args, int);
+	s = ft_itoa(num);
+	if (s)
+	{
+		ft_putstr_fd(s, 1);
+		(*count) += ft_strlen(s);
+		free(s);
+	}
+}

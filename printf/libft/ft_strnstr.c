@@ -1,24 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   ft_strnstr.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aldiaz-u <aldiaz-u@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/30 17:38:05 by aldiaz-u          #+#    #+#             */
-/*   Updated: 2025/07/02 09:39:06 by aldiaz-u         ###   ########.fr       */
+/*   Created: 2025/04/09 11:11:35 by aldiaz-u          #+#    #+#             */
+/*   Updated: 2025/04/09 16:05:08 by aldiaz-u         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 4
-# endif
-# include <fcntl.h>
-# include <stdlib.h>
-# include <unistd.h>
-# include "printf/ft_printf.h"
+#include "libft.h"
 
-char	*get_next_line(int fd);
-#endif
+char	*ft_strnstr(char *big, char *little, size_t n)
+{
+	size_t	i;
+	size_t	j;
+
+	i = 0;
+	if (little[0] == '\0')
+		return (big);
+	while (big[i] && i < n)
+	{
+		j = 0;
+		while (big[i + j] == little[j] && (i + j) < n)
+		{
+			j++;
+			if (little[j] == '\0')
+				return (&big[i]);
+		}
+		i++;
+	}
+	return (NULL);
+}

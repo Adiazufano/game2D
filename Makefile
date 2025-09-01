@@ -5,8 +5,10 @@ LIBMLX=MLX42
 
 HEADERS=-I ./include -I $(LIBMLX)/inlcude
 LIBS =$(LIBMLX)/build/libmlx42.a -ldl -lglfw -pthread -lm
-SRCS=main.c get_next_line.c get_next_line_utils.c
+SRCS=main.c get_next_line.c collectionables.c draw_items.c exit.c flood_fil.c image.c map_errors.c moves.c utils.c
 OBJS=$(SRCS:%.c=%.o)
+PRINTF_DIR = printf
+PRINTF = $(PRINTF_DIR)/libftprintf.a
 
 all: libmlx $(NAME)
 
@@ -14,18 +16,21 @@ libmlx:
 	@cmake $(LIBMLX) -B $(LIBMLX)/build && make -C $(LIBMLX)/build -j4
 
 $(NAME):$(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) $(HEADERS) -o $(NAME)
+	@make -C $(PRINTF_DIR)
+	@$(CC) $(CFLAGS) $(OBJS) $(LIBS) $(PRINTF) $(HEADERS) -o $(NAME)
 
 %.o:%.c
-	$(CC) $(CFLAGS) -Imlx -Iincludes -c $< -o $@
+	@$(CC) $(CFLAGS) -Imlx -Iincludes -c $< -o $@
 
 clean:
-	rm -rf $(OBJS)
+	@make clean -C $(PRINTF_DIR)
+	@rm -rf $(OBJS)
 
 fclean:clean
-	rm -rf $(NAME)
+	@make fclean -C $(PRINTF_DIR)
+	@rm -rf $(NAME)
 
 re:fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all libmlx clean fclean re
 
